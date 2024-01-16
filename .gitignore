@@ -1,0 +1,27 @@
+# ide
+.idea
+.vscode
+
+
+# object files
+*.bin
+*.exe
+*.class
+*.o
+*.out
+*.so
+
+#image
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp4
+!image/README/*.*
+
+node_modules
+dist
+output
+target
+build
