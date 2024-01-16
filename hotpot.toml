@@ -1,0 +1,6 @@
+Delay = 1000
+Command = 'go run main.go'
+WatchFiles = ['*']
+IgnoreFolders = ['node_modules', 'vendor', '.git', '.idea', '.vscode', 'log', 'build', 'dist', 'bin', 'public', 'target', 'output']
+ShowEvent = true
+Github = 'https://github.com/KM911/hotpot'

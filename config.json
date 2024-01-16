@@ -1,0 +1,31 @@
+{
+  "Source": "D:\\GITHUB\\KM911\\template\\p\\gm",
+  "Target": "T:\\sapkin",
+  "BuildCommand": "go build -o ms",
+  "BuildOutput": "ms",
+  "ExecuteBoxs": [
+    {
+      "Args": [],
+      "Env": [],
+      "Dir": "",
+      "ExitCode": 0
+    },
+    {
+      "Args": [
+        "config.toml"
+      ],
+      "Env": [],
+      "Dir": "",
+      "ExitCode": 0
+    },
+    {
+      "Args": [
+        "test",
+        "config.toml"
+      ],
+      "Env": [],
+      "Dir": "",
+      "ExitCode": 0
+    }
+  ]
+}
