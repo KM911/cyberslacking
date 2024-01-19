@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-type ControlMessage struct {
+type FileInfoMessage struct {
 	ChunkSize uint64
 	ChunkNum  uint64
 	FileName  string
@@ -35,8 +35,8 @@ func getFileMd5(filename string) string {
 	return hex.EncodeToString(md5h.Sum(nil))
 }
 
-func GetControlMessage(_src string) *ControlMessage {
-	msg := &ControlMessage{
+func GetFileInfoMessage(_src string) *FileInfoMessage {
+	msg := &FileInfoMessage{
 		ChunkSize: 1400,
 	}
 	fileInfo, _ := os.Stat(_src)
@@ -54,8 +54,7 @@ func GetControlMessage(_src string) *ControlMessage {
 	return msg
 }
 
-func (_msg *ControlMessage) ToBuffer() []byte {
-	// 将其序列化
+func (_msg *FileInfoMessage) ToBuffer() []byte {
 	var buf bytes.Buffer
 	encoder := gob.NewEncoder(&buf)
 	err := encoder.Encode(_msg)
@@ -63,22 +62,17 @@ func (_msg *ControlMessage) ToBuffer() []byte {
 		panic(err.Error())
 	}
 	bf := buf.Bytes()
-	fmt.Println("序列化后的数据 : ", bf)
 	return bf
 }
 
-func ResolveControlMessage(_data []byte) *ControlMessage {
-	_msg := &ControlMessage{}
-	// fmt.Println("your data is ", _data)
-	// 我们需要将 _data 变成一个io.Reader
+func ResolveControlMessage(_data []byte) *FileInfoMessage {
+	_msg := &FileInfoMessage{}
 	reader := bytes.NewReader(_data)
-	fmt.Println(reader)
 
 	decoder := gob.NewDecoder(reader)
 	err := decoder.Decode(_msg)
 	if err != nil {
-		fmt.Println(err.Error())
+		panic(err.Error())
 	}
-	// fmt.Println("反序列化后的数据", _msg)
 	return _msg
 }

@@ -3,8 +3,6 @@ package network
 import (
 	"fmt"
 	"net"
-	"os"
-	"time"
 )
 
 func EstablishConnection(_serverAddress string) *net.UDPConn {
@@ -23,33 +21,48 @@ func EstablishConnection(_serverAddress string) *net.UDPConn {
 	return conn
 }
 
-func SendFile(_conn *net.UDPConn, _src string, fileInfo *ControlMessage) {
-	file, _ := os.Open(_src)
+// func SendFileControled(_conn *net.UDPConn, _src string, fileInfo *FileInfoMessage) {
+// 	task := CreateTaskQueen(100)
+// 	fmt.Println("开始发送文件")
+// 	go func() {
+// 		// 第一次正常发包
+// 		for i := 1; i <= int(fileInfo.ChunkNum); i++ {
+// 			// 这里速度需要控制一下,避免太快了不是吗?
 
-	buffer := make([]byte, fileInfo.ChunkSize)
-	index := 0
-	for {
-		if index >= int(fileInfo.ChunkNum) {
-			break
-		}
-		if index%90 == 0 {
-			time.Sleep(100 * time.Millisecond)
-		}
-		n, _ := file.Read(buffer)
-		_conn.Write(buffer[:n])
-		index++
-		// 降低发送的频率 , 进行限流, 不然会将包全部丢弃
+// 			task.queen <- int64(i)
+// 		}
+// 		// 从_conn中读取数据,补充到剩余的任务队列中
+// 		// task.queen.Close()
+// 		close(task.queen)
+// 		// 这里的0值感觉不太好
+// 	}()
 
-	}
-	fmt.Println("共发送", index, "个数据包")
-}
+// 	file, _ := os.Open(_src)
+// 	buffer := make([]byte, fileInfo.ChunkSize)
+// 	var index int64
+// 	for {
 
-func ClientStart() {
-	conn := EstablishConnection("127.0.0.1:3000")
-	// conn.Write([]byte("hello world"))
-	fileInfo := GetControlMessage(SendFileName)
-	conn.Write(fileInfo.ToBuffer())
+// 		index = <-task.queen
+// 		// 正在发送数据包
+// 		// fmt.Println("index : ", index)
+// 		if index == 0 {
+// 			break
+// 		}
+// 		n, _ := file.ReadAt(buffer, (index-1)*int64(fileInfo.ChunkSize))
+// 		_conn.Write(ToByte(Payload{
+// 			Index: uint64(index - 1),
+// 			Data:  buffer[:n],
+// 		}))
+// 	}
+// 	fmt.Println("包发送完毕")
+// }
 
-	SendFile(conn, SendFileName, fileInfo)
-
-}
+//func ClientStart() {
+//	conn := EstablishConnection("127.0.0.1:3000")
+//	// conn.Write([]byte("hello world"))
+//	fileInfo := GetFileInfoMessage(SendFileName)
+//	conn.Write(fileInfo.ToBuffer())
+//
+//	// SendFile(conn, SendFileName, fileInfo)
+//	SendFileControled(conn, SendFileName, fileInfo)
+//}
