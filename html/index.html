@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script>
+    function Upload(){
+      console.log('upload');
+      var file = document.getElementById('file').files[0];
+      var formData = new FormData();
+      formData.append('file', file);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:3000/upload');
+      xhr.send(formData);
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4 && xhr.status === 200){
+          console.log(xhr.responseText);
+        }
+      }
+    }
+
+    function Hello(){
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'http://localhost:3000/hello');
+      xhr.send();
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4 && xhr.status === 200){
+          console.log(xhr.responseText);
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 上传文件 -->
+  <input type="file" name="file" id="file">
+  <button id="upload" onclick="Upload()">上传</button>
+</body>
+</html>

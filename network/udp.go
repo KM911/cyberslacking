@@ -33,7 +33,7 @@ func (_conn *UDPConn) SendData(_data []byte) int {
 }
 
 func (_conn *UDPConn) ReceiveData() []byte {
-	buffer := make([]byte, 1500)
+	buffer := make([]byte, MTU)
 	n, err := _conn.conn.Read(buffer)
 	if err != nil {
 		return nil
@@ -47,12 +47,7 @@ func (_conn *UDPConn) Listener(_address string) {
 		fmt.Println("无法解析UDP地址:", err)
 		return
 	}
-
-	// 创建的UPD地址内容为
-	fmt.Println("创建的UPD地址内容为", udpAddress)
-
-	// 创建UDP连接
-	// 需要一个udpAddress对象 其实就是 ip + port
+	fmt.Println("udp listen ", udpAddress)
 	conn, err := net.ListenUDP("udp", udpAddress)
 	if err != nil {
 		fmt.Println("无法监听UDP地址:", err)
@@ -83,11 +78,11 @@ func UDPClientStart(_address string) {
 }
 
 func UDPServerReceiveFile(_address string) {
-
 	conn := &UDPConn{}
 	conn.Listener(_address)
 	fileInfo := &FileInfoMessage{}
 	ParseGob(conn.ReceiveData(), fileInfo)
+	fileInfo.FileName = "UDP_" + fileInfo.FileName
 	ReceiveFile(conn.conn, fileInfo)
 }
 
@@ -97,4 +92,35 @@ func UDPClientSendFile(_address string, _src string) {
 	fileInfo := GetFileInfoMessage(_src)
 	conn.SendData(fileInfo.ToBuffer())
 	SendFile(conn.conn, _src, fileInfo)
+}
+
+func UDPPingServer(_address string) {
+
+	conn := &UDPConn{}
+	buffer := make([]byte, MTU)
+	conn.EstablishConnection(_address)
+	for {
+		conn.SendData([]byte("ping"))
+		n, err := conn.conn.Read(buffer)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("receive from ", conn.conn.RemoteAddr(), " data is ", string(buffer[:n]))
+		time.Sleep(1 * time.Second)
+	}
+
+}
+
+func UDPPangServer(_address string) {
+	conn := &UDPConn{}
+	buffer := make([]byte, MTU)
+	conn.Listener(_address)
+	for {
+		n, address, err := conn.conn.ReadFromUDP(buffer)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("receive from ", address, " data is ", string(buffer[:n]))
+		conn.conn.WriteToUDP([]byte("pang"), address)
+	}
 }

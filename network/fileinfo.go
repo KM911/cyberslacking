@@ -37,7 +37,7 @@ func getFileMd5(filename string) string {
 
 func GetFileInfoMessage(_src string) *FileInfoMessage {
 	msg := &FileInfoMessage{
-		ChunkSize: 1400,
+		ChunkSize: MTU - 100,
 	}
 	fileInfo, _ := os.Stat(_src)
 	if uint64(fileInfo.Size())%msg.ChunkSize != 0 {
@@ -48,7 +48,7 @@ func GetFileInfoMessage(_src string) *FileInfoMessage {
 
 	// 获取文件的md5
 	msg.FileMd5 = getFileMd5(_src)
-	msg.FileName = "udp_" + _src
+	msg.FileName = _src
 
 	fmt.Println("your message is ", msg)
 	return msg

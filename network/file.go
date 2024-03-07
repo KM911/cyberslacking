@@ -69,3 +69,9 @@ func fileCheck(fileInfo *FileInfoMessage) {
 		fmt.Println("文件传输失败")
 	}
 }
+
+func getFileSize(_src string) int64 {
+	fileInfo, _ := os.Stat(_src)
+	return fileInfo.Size()
+	// fmt.Println("file size is ", fileInfo.Size())
+}

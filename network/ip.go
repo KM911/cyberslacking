@@ -38,7 +38,7 @@ func (_conn *IPConn) SendData(_data []byte) int {
 }
 
 func (_conn *IPConn) ReceiveData() []byte {
-	buffer := make([]byte, 1500)
+	buffer := make([]byte, MTU)
 	n, err := _conn.conn.Read(buffer)
 	if err != nil {
 		return nil
