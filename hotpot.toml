@@ -1,0 +1,6 @@
+Delay = 500
+Command = 'python pymake.py go build'
+WatchFiles = ['go']
+IgnoreFolders = ['node_modules', 'vendor', '.git', '.idea', '.vscode', 'log', 'build', 'dist', 'bin', 'public', 'target', 'output']
+ShowEvent = true
+Github = 'https://github.com/KM911/hotpot'
