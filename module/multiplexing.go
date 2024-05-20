@@ -1,19 +1,75 @@
 package module
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 func ForLoopChek() {
 	for {
-		for _, conn := range ConnectionPool {
+		for _, client := range ClientPool {
 			buf := make([]byte, 1024)
 			n, err := conn.Read(buf)
 			if err != nil {
-				delete(ConnectionPool, conn.RemoteAddr().String())
-				BoardCastMessage(conn.RemoteAddr().String() + "quit")
+				delete(ClientPool, client.Conn.RemoteAddr().String())
+				BoardCastMessage([]byte(conn.RemoteAddr().String()+"quit"), "")
 				continue
 			}
-			fmt.Println("receive message:", string(buf[:n]))
-			BoardCastMessage(string(buf[:n]))
+			BoardCastMessage(buf[:n], "")
+		}
+	}
+}
+
+func ListenSingleConnection(conn net.Conn) {
+	buf := make([]byte, 1024)
+	client := ClientPool[conn.RemoteAddr().String()]
+	key := ClientPool[conn.RemoteAddr().String()].Key
+	for {
+		n, err := conn.Read(buf)
+		if err != nil {
+			delete(ClientPool, conn.RemoteAddr().String())
+			BoardCastMessage([]byte(conn.RemoteAddr().String()+"quit"), "")
+			return
+		}
+		// decry
+		bs, err := decrypt(buf[:n], key)
+		if err != nil {
+			fmt.Println("decrypt error", err)
+			continue
+		}
+		msg := ResolveMessage(bs)
+		// fmt.Println("msg is ", msg.Action, msg.Content)
+		switch msg.Action {
+		case "chat":
+
+			BoardCastMessage(append(append(client.Username, []byte(">")...), msg.Content...), conn.RemoteAddr().String())
+		case "list":
+			// conn.Write([]byte("list"))
+			users := []byte{}
+			for _, v := range ClientPool {
+				// connection two slice
+				fmt.Println("username is ", string(v.Username))
+				users = append(v.Username, []byte("  ")...)
+				users = append(users, []byte(v.Conn.RemoteAddr().String())...)
+				users = append(users, []byte("\t")...)
+			}
+			bs, err := encrypt(users, key)
+			if err != nil {
+				fmt.Println("encrypt error", err)
+			}
+			conn.Write(bs)
+		case "rename":
+			// ClientPool[conn.RemoteAddr().String()].Username = string(msg.Content)
+			fmt.Println("rename")
+			client.Username = msg.Content
+			ClientPool[conn.RemoteAddr().String()] = client
+			// for _, v := range ClientPool {
+			// if v.Conn.RemoteAddr().String() == conn.RemoteAddr().String() {
+			// v.Username = msg.Content
+			// break
+			// }
+			// }
+
 		}
 	}
 }

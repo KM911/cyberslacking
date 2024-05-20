@@ -17,10 +17,24 @@ func pause() {
 	Pause.Wait()
 }
 
+type Client struct {
+	Conn     net.Conn
+	Username []byte
+	Key      []byte
+}
+
+func NewClient(conn net.Conn) Client {
+	return Client{
+		Conn:     conn,
+		Username: []byte{},
+		Key:      generateKey(),
+	}
+}
+
 var (
-	ConnectionPool = make(map[string]net.Conn)
-	Pause          = sync.WaitGroup{}
-	Listener       net.Listener
+	ClientPool = make(map[string]Client)
+	Pause      = sync.WaitGroup{}
+	Listener   net.Listener
 )
 
 func ServerStart() {
@@ -39,46 +53,35 @@ func ServerStartGoroutine() {
 	for {
 		conn, err := Listener.Accept()
 		Must(err)
-		ConnectionPool[conn.RemoteAddr().String()] = conn
-		go HandleMessageGoroutine(conn)
+		fmt.Println("new conn ", conn.RemoteAddr().String())
+		client := NewClient(conn)
+		ClientPool[conn.RemoteAddr().String()] = client
+		conn.Write(client.Key)
+		go ListenSingleConnection(conn)
 	}
-	// go ConnectClient()
-	// go HandleMessage()
-	// pause()
-}
-
-func HandleMessageGoroutine(conn net.Conn) {
-	buf := make([]byte, 1024)
-	for {
-		n, err := conn.Read(buf)
-		if err != nil {
-			delete(ConnectionPool, conn.RemoteAddr().String())
-			BoardCastMessage(conn.RemoteAddr().String() + "quit")
-			// free the resource
-			return
-		}
-		fmt.Println("receive message:", string(buf[:n]))
-		BoardCastMessage(string(buf[:n]))
-	}
-}
-
-func HandleMessage() {
-	// 这里涉及到多路复用的问题,我们这里是对每一个连接都进行了监听
-	// TODO 优化nio
-	ForLoopChek()
 }
 
 func ConnectClient() {
 	for {
 		conn, err := Listener.Accept()
 		Must(err)
-		fmt.Println("new connetion:", conn.RemoteAddr())
-		ConnectionPool[conn.RemoteAddr().String()] = conn
+		fmt.Println("new conn ", conn.RemoteAddr().String())
+		newClient := NewClient(conn)
+		ClientPool[conn.RemoteAddr().String()] = newClient
+		conn.Write(newClient.Key)
+
 	}
 }
 
-func BoardCastMessage(message string) {
-	for _, conn := range ConnectionPool {
-		conn.Write([]byte(message))
+func BoardCastMessage(message []byte, sneder string) {
+	for _, client := range ClientPool {
+		if client.Conn.RemoteAddr().String() == sneder {
+			continue
+		}
+		bs, err := encrypt(message, client.Key)
+		if err != nil {
+			fmt.Println(err)
+		}
+		client.Conn.Write(bs)
 	}
 }
