@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"time"
 )
 
 type Message struct {
@@ -36,9 +37,11 @@ func ResolveMessage(_data []byte) *Message {
 }
 
 func Chat(_content []byte) *Message {
+	// timestamp := []byte("12:12:12")
+	timestamp := []byte(time.Now().Format("  15:04:05  "))
 	return &Message{
 		Action:  "chat",
-		Content: _content,
+		Content: append(timestamp, _content...),
 	}
 }
 

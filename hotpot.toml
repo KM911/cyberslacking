@@ -1,5 +1,6 @@
 Delay = 500
-Command = 'make'
+BuildCommand = 'make'
+ExecuteCommand = './server'
 WatchFiles = ['go']
 IgnoreFolders = [
     'node_modules',

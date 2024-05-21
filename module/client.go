@@ -35,6 +35,7 @@ func ClientStart() {
 	fmt.Println("Input /help to get more info about command")
 	// get the key
 	conn.Read(Key)
+	fmt.Println(Key)
 	fmt.Println("Established Secure Connection !!!")
 	go ListenBroadcast()
 	go ListenUserInput()

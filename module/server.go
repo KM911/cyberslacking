@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 )
 
 func Must(err error) {
@@ -32,9 +33,10 @@ func NewClient(conn net.Conn) Client {
 }
 
 var (
-	ClientPool = make(map[string]Client)
-	Pause      = sync.WaitGroup{}
-	Listener   net.Listener
+	ClientPool   = make(map[string]Client)
+	Pause        = sync.WaitGroup{}
+	Listener     net.Listener
+	MessageQueue = NewRingQueue(10)
 )
 
 func ServerStart() {
@@ -57,6 +59,15 @@ func ServerStartGoroutine() {
 		client := NewClient(conn)
 		ClientPool[conn.RemoteAddr().String()] = client
 		conn.Write(client.Key)
+		// send history
+		MessageQueue.Each(func(msg []byte) {
+			bs, err := encrypt(msg, client.Key)
+			time.Sleep(1 * time.Second)
+			if err != nil {
+				fmt.Println(err)
+			}
+			conn.Write(bs)
+		})
 		go ListenSingleConnection(conn)
 	}
 }

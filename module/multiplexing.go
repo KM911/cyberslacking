@@ -41,8 +41,9 @@ func ListenSingleConnection(conn net.Conn) {
 		// fmt.Println("msg is ", msg.Action, msg.Content)
 		switch msg.Action {
 		case "chat":
-
-			BoardCastMessage(append(append(client.Username, []byte(">")...), msg.Content...), conn.RemoteAddr().String())
+			bs := append(client.Username, msg.Content...)
+			MessageQueue.Enqueue(bs)
+			BoardCastMessage(bs, conn.RemoteAddr().String())
 		case "list":
 			// conn.Write([]byte("list"))
 			users := []byte{}
